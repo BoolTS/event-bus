@@ -1,0 +1,42 @@
+{
+    "author": "Trần Đức Tâm (Neo)",
+    "bugs": {
+        "url": "https://github.com/BoolTS/event-bus/issues"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "prettier": "^3.8.1",
+        "typescript": "^5.9.3"
+    },
+    "files": [
+        "./dist",
+        "./src"
+    ],
+    "homepage": "https://github.com/BoolTS/event-bus#readme",
+    "keywords": [
+        "bool",
+        "typescript",
+        "ts",
+        "bun",
+        "framework",
+        "SDK"
+    ],
+    "license": "MIT",
+    "main": "./dist/index.js",
+    "name": "@bool-ts/event-bus",
+    "private": false,
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BoolTS/event-bus.git"
+    },
+    "scripts": {
+        "build": "tsc --noEmit && bun run ./app.build.ts && tsc --emitDeclarationOnly",
+        "format": "prettier \"./src/**/*.ts\" --write",
+        "test": "bun --hot run __test/index.ts"
+    },
+    "types": "./dist/index.d.ts",
+    "version": "1.0.0"
+}
