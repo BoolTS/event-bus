@@ -1,8 +1,9 @@
-import type { TDeepReadonly } from "../ultils/types";
+import type { TDeepReadonly, TDeepWritable } from "../ultils/types";
 
 import { deepFreeze } from "../ultils/functions";
+import { deepWritable } from "../ultils/functions/deepWritable";
 
-export type TListener<T extends object> = (arsg: T) => any;
+export type TListener<T extends object> = (args: T) => any;
 export type TEventReturn<T = any> = T;
 
 /**
@@ -13,15 +14,16 @@ export class EventBus<
     TEvents extends { [key: string]: TEventReturn } = {}
 > {
     private readonly _listeners = new Map<
-        TListener<TState | TDeepReadonly<TState>>,
-        TListener<TState | TDeepReadonly<TState>>
+        TListener<TDeepReadonly<TState>>,
+        TListener<TDeepReadonly<TState>>
     >();
 
     private readonly _eventListeners: Partial<{
         [key in keyof TEvents]: Map<(args: TEvents[key]) => any, undefined>;
     }> = Object();
 
-    #state: TDeepReadonly<TState> = deepFreeze<TState>(Object());
+    #readonlyState: TDeepReadonly<TState> = deepFreeze<TState>(Object());
+    #writableState: TDeepWritable<TState> = deepWritable<TState>(Object());
 
     /**
      * Subcribe station by listener(s)
@@ -30,8 +32,18 @@ export class EventBus<
     public subscribe(
         args: Required<{
             listeners:
-                | TListener<TState | TDeepReadonly<TState>>
-                | Array<TListener<TState | TDeepReadonly<TState>>>;
+                | TListener<
+                      | TState
+                      | TDeepReadonly<TState>
+                      | TDeepReadonly<TDeepWritable<TState>>
+                  >
+                | Array<
+                      TListener<
+                          | TState
+                          | TDeepReadonly<TState>
+                          | TDeepReadonly<TDeepWritable<TState>>
+                      >
+                  >;
         }>
     ) {
         const { listeners } = args;
@@ -62,8 +74,18 @@ export class EventBus<
     public unsubscribe(
         args: Required<{
             listeners:
-                | TListener<TState | TDeepReadonly<TState>>
-                | Array<TListener<TState | TDeepReadonly<TState>>>;
+                | TListener<
+                      | TState
+                      | TDeepReadonly<TState>
+                      | TDeepReadonly<TDeepWritable<TState>>
+                  >
+                | Array<
+                      TListener<
+                          | TState
+                          | TDeepReadonly<TState>
+                          | TDeepReadonly<TDeepWritable<TState>>
+                      >
+                  >;
         }>
     ) {
         const { listeners } = args;
@@ -176,8 +198,15 @@ export class EventBus<
      * Update state and emit new state changes to listening React component(s)
      * @param args
      */
-    protected setState(args: TState) {
-        this.#state = deepFreeze({ ...args });
+    protected setState(
+        args: ((args: TDeepWritable<TState>) => TState) | TState
+    ) {
+        const temporaryState = {
+            ...(args instanceof Function ? args(this.#writableState) : args)
+        };
+
+        this.#writableState = deepWritable(temporaryState);
+        this.#readonlyState = deepFreeze(temporaryState);
 
         try {
             if (this._listeners.size < 1) {
@@ -185,13 +214,13 @@ export class EventBus<
             }
 
             const entries = this._listeners.entries();
-            const keys: TListener<TState | TDeepReadonly<TState>>[] = [];
+            const keys: TListener<TDeepReadonly<TState>>[] = [];
 
             for (const [key] of entries) {
                 keys.push(key);
             }
 
-            Promise.allSettled(keys.map((key) => key(this.#state)));
+            Promise.allSettled(keys.map((key) => key(this.#readonlyState)));
         } catch (error) {
             console.error(error);
         }
@@ -231,6 +260,10 @@ export class EventBus<
     }
 
     get $state() {
-        return this.#state;
+        return this.#readonlyState;
+    }
+
+    get $writableState() {
+        return this.#writableState;
     }
 }

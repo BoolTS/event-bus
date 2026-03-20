@@ -1,5 +1,5 @@
-import type { TDeepReadonly } from "../ultils/types";
-export type TListener<T extends object> = (arsg: T) => any;
+import type { TDeepReadonly, TDeepWritable } from "../ultils/types";
+export type TListener<T extends object> = (args: T) => any;
 export type TEventReturn<T = any> = T;
 /**
  * Parent of singletons
@@ -15,14 +15,14 @@ export declare class EventBus<TState extends {}, TEvents extends {
      * @param args
      */
     subscribe(args: Required<{
-        listeners: TListener<TState | TDeepReadonly<TState>> | Array<TListener<TState | TDeepReadonly<TState>>>;
+        listeners: TListener<TState | TDeepReadonly<TState> | TDeepReadonly<TDeepWritable<TState>>> | Array<TListener<TState | TDeepReadonly<TState> | TDeepReadonly<TDeepWritable<TState>>>>;
     }>): void;
     /**
      * Unsubcribe station on specific listenter(s)
      * @param args
      */
     unsubscribe(args: Required<{
-        listeners: TListener<TState | TDeepReadonly<TState>> | Array<TListener<TState | TDeepReadonly<TState>>>;
+        listeners: TListener<TState | TDeepReadonly<TState> | TDeepReadonly<TDeepWritable<TState>>> | Array<TListener<TState | TDeepReadonly<TState> | TDeepReadonly<TDeepWritable<TState>>>>;
     }>): void;
     /**
      * Subcribe to receive event(s) base on defined event name
@@ -44,7 +44,7 @@ export declare class EventBus<TState extends {}, TEvents extends {
      * Update state and emit new state changes to listening React component(s)
      * @param args
      */
-    protected setState(args: TState): void;
+    protected setState(args: ((args: TDeepWritable<TState>) => TState) | TState): void;
     /**
      *
      * @param args
@@ -55,4 +55,5 @@ export declare class EventBus<TState extends {}, TEvents extends {
         data: TEvents[TEventName];
     }>): void;
     get $state(): TDeepReadonly<TState>;
+    get $writableState(): TDeepWritable<TState>;
 }
