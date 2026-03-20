@@ -25,7 +25,7 @@ export declare class EventBus<TState extends {}, TEvents extends {
         listeners: TListener<TState | TDeepReadonly<TState>> | Array<TListener<TState | TDeepReadonly<TState>>>;
     }>): void;
     /**
-     *
+     * Subcribe to receive event(s) base on defined event name
      * @param args
      */
     subscribeOnEvent<TEventName extends keyof TEvents>(args: Required<{
@@ -54,8 +54,5 @@ export declare class EventBus<TState extends {}, TEvents extends {
         eventName: TEventName;
         data: TEvents[TEventName];
     }>): void;
-    /**
-     * @deprecated
-     */
     get $state(): TDeepReadonly<TState>;
 }

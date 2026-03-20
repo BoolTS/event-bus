@@ -1,5 +1,6 @@
-import { deepFreeze } from "../ultils/functions";
 import type { TDeepReadonly } from "../ultils/types";
+
+import { deepFreeze } from "../ultils/functions";
 
 export type TListener<T extends object> = (arsg: T) => any;
 export type TEventReturn<T = any> = T;
@@ -84,7 +85,7 @@ export class EventBus<
     }
 
     /**
-     *
+     * Subcribe to receive event(s) base on defined event name
      * @param args
      */
     public subscribeOnEvent<TEventName extends keyof TEvents>(
@@ -229,9 +230,6 @@ export class EventBus<
         }
     }
 
-    /**
-     * @deprecated
-     */
     get $state() {
         return this.#state;
     }
